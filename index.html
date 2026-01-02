@@ -1,0 +1,585 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная страница dks5</title>
+    
+    <!-- Подключение Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .glowing-text {
+            color: #5B21B6;
+            text-shadow: none;
+        }
+
+        .card {
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        /* --- Dark Mode Base --- */
+        .dark body {
+            background-color: #111827;
+            color: #d1d5db;
+        }
+        .dark .card {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            box-shadow: 0 0 15px 3px rgba(139, 108, 235, 0.4);
+        }
+        .dark .glowing-text {
+            color: #A78BFA;
+        }
+        .dark a {
+            color: #A78BFA;
+        }
+        .dark a:hover {
+            color: #c4b5fd;
+        }
+        
+        /* --- Button Colors --- */
+        .bg-blue-500 {
+            background-color: #5B21B6;
+        }
+        .hover\:bg-blue-600:hover {
+            background-color: #7C3AED;
+        }
+        .dark .bg-blue-500 {
+            background-color: #4A1B8C;
+        }
+        .dark .hover\:bg-blue-600:hover {
+            background-color: #6B21A8;
+        }
+        .dark .bg-gray-500 {
+            background-color: #374151;
+        }
+        .dark .hover\:bg-gray-600:hover {
+            background-color: #4b5563;
+        }
+
+        /* --- СТИЛИ: Сетка Карт --- */
+        .folder-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr); /* 1 колонка на мобильных */
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 640px) { /* sm */
+            .folder-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2 колонки на планшетах */
+            }
+        }
+        
+        @media (min-width: 768px) { /* md */
+            .folder-grid {
+                grid-template-columns: repeat(3, 1fr); /* 3 колонки */
+            }
+        }
+
+        @media (min-width: 1024px) { /* lg */
+            .folder-grid {
+                grid-template-columns: repeat(4, 1fr); /* 4 колонки на десктопах */
+            }
+        }
+
+        .folder-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem; 
+            background-color: #f9fafb;
+            border-radius: 0.75rem; 
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .folder-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            border-color: #A78BFA;
+        }
+
+        .dark .folder-card {
+            background-color: #374151;
+            border-color: #4b5563;
+            box-shadow: none;
+        }
+
+        .dark .folder-card:hover {
+            background-color: #4b5563;
+            border-color: #A78BFA;
+            box-shadow: 0 0 15px 3px rgba(167, 139, 250, 0.3);
+        }
+        
+        .folder-card-icon {
+            font-size: 2.5rem; /* 40px */
+            line-height: 1;
+            margin-bottom: 0.75rem; 
+            color: #5B21B6;
+            position: relative; /* Для позиционирования замка */
+            display: inline-block; 
+        }
+        
+        /* --- Стили для папки с замком --- */
+        .locked-folder-icon::after {
+            content: '🔒'; /* Символ замка */
+            position: absolute;
+            top: 55%; /* Позиционирование по вертикали */
+            left: 50%; /* Позиционирование по горизонтали */
+            transform: translate(-50%, -50%); /* Коррекция для идеального центра */
+            font-size: 0.45em; /* Маленький размер */
+            line-height: 1;
+        }
+
+        .dark .folder-card-icon {
+            color: #A78BFA;
+        }
+
+        .folder-card-name {
+            font-size: 1rem; /* 16px */
+            font-weight: 600;
+            word-break: break-all; 
+        }
+
+        /* --- СТИЛИ: Модальное окно --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 42rem; /* 672px */
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.open .modal-content {
+             transform: scale(1);
+        }
+
+        .dark .modal-content {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .dark .modal-header {
+             border-color: #374151;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem; /* 24px */
+            font-weight: 600;
+            color: #5B21B6;
+        }
+        
+        .dark .modal-title {
+            color: #A78BFA;
+        }
+        
+        .modal-close-btn {
+            font-size: 2rem;
+            font-weight: 300;
+            line-height: 1;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #9ca3af;
+        }
+        .modal-close-btn:hover {
+            color: #374151;
+        }
+        .dark .modal-close-btn:hover {
+            color: #e5e7eb;
+        }
+        
+        .modal-file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .modal-file-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .modal-file-item:hover {
+            background-color: #f9fafb;
+        }
+        
+        .dark .modal-file-item:hover {
+            background-color: #374151;
+        }
+
+        .modal-file-item a {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #374151;
+        }
+
+        .dark .modal-file-item a {
+            color: #c4b5fd;
+        }
+        
+        .dark .modal-file-item a:hover {
+            text-decoration: underline;
+        }
+
+        .modal-file-item-icon {
+            font-size: 1.25rem;
+            color: #9ca3af;
+        }
+        
+        .dark .modal-file-item-icon {
+             color: #6b7280;
+        }
+        
+    </style>
+</head>
+<head>
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
+<link rel="shortcut icon" href="/favicon/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+<link rel="manifest" href="/favicon/site.webmanifest">
+</head>
+    
+<body class="flex flex-col items-center px-4 md:px-6">
+
+    <!-- Header --><header class="w-full text-center py-8">
+        <h1 class="text-4xl font-bold glowing-text">Главная страница dks5</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">Обзор всех файлов, сгруппированных по темам.</p>
+        <div class="mt-4 flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4">
+            
+            <button id="themeToggleButton" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full shadow-lg transition-colors duration-200">
+                Тёмная тема
+            </button>
+        </div>
+    </header>
+
+    <!-- Content container --><div class="w-full max-w-5xl p-6 card">
+        
+        <!-- НОВЫЙ КОНТЕЙНЕР: Сетка папок --><div id="folderGridContainer" class="folder-grid">
+            <!-- Карточки папок будут вставлены сюда с помощью JavaScript --></div>
+
+        <!-- Старый контейнер данных, теперь скрыт --><div class="root-folder-branches" style="display: none;">
+            <!-- Data for dynamic rendering --><div id="folderData" class="hidden">
+
+                
+                  
+                     /* --- НАЧАЛО БЛОКА: "dks5.github.io" -------------------------------------------------- */
+                    <div data-folder="dks5.github.io">
+                    <div data-file="anotherfile.html">anotherfile.html</div>
+                        <div data-file="dks5-main.html">dks5-main.html</div>
+                        <div data-file="generic-auth-instructions.html">generic-auth-instructions.html</div>
+                        <div data-file="firebase-protect-prompt.html">firebase-protect-prompt.html</div>
+                        <div data-file="React-To-Single-HTML.html">React-To-Single-HTML.html</div>
+                        
+                        
+                         </div>
+                    /* --- НАЧАЛО БЛОКА: "YouTube" -------------------------------------------------- */
+                    <div data-folder="YouTube">
+                        <div data-file="youtube-archive.html">youtube-archive.html</div>
+                        <div data-file="get_uid.html">get_uid.html</div>
+                        <div data-file="admin-instructions.html">admin-instructions.html</div>
+                        <div data-file="firebase-protect-prompt.html">firebase-protect-prompt.html</div>
+                        
+                    </div>
+                    /* --- НАЧАЛО БЛОКА: "StatiCrypt-Tool" -------------------------------------------------- */
+                    <div data-folder="StatiCrypt-Tool">
+                        <div data-file="StatiCrypt-Tool.html">StatiCrypt-Tool.html</div>
+                        </div>
+
+                     /* --- НАЧАЛО БЛОКА: "tools" -------------------------------------------------- */
+                    <div data-folder="tools">
+                        <div data-file="airpods-translator.html">airpods-translator.html</div>
+                        <div data-file="✅RustDesk  настр. сетевого подключ.html">✅RustDesk  настр. сетевого подключ.html</div>
+                           <div data-file="firebase_instruction.html">firebase_instruction.html</div>
+                        <div data-file="simple-win-activate.html">simple-win-activate.html</div>
+                        <div data-file="easy-xray-install.html">easy-xray-install.html</div>
+                    </div>
+
+                         /* --- НАЧАЛО БЛОКА: "Youtube-VK-Prompts" -------------------------------------------------- */
+                    <div data-folder="Youtube-VK-Prompts">
+                        <div data-file="vk-video-downloader.html">vk-video-downloader.html</div>
+                        <div data-file="prompt-transcript-structurizer-youtube.html">prompt-transcript-structurizer-youtube.html</div>
+                        <div data-file="Prompt-FineReader-Text-Corrector.html">Prompt-FineReader-Text-Corrector.html</div>
+                        <div data-file="Prompt-Youtube-Lecture-Chapters.html">Prompt-Youtube-Lecture-Chapters.html</div>  
+                        <div data-file="Prompt-Youtube-Timestamps.html">Prompt-Youtube-Timestamps.html</div>
+                     </div>
+                                     /* --- НАЧАЛО БЛОКА: "GEMINI-PERPLEXITY" -------------------------------------------------------- */
+                      <div data-folder="GEMINI-PERPLEXITY">
+                          <div data-file="get-perplexity-student-access.html">get-perplexity-student-access.html</div>
+                        <div data-file="Google-AI-Pro-12-Months.html">Google-AI-Pro-12-Months.html</div>
+                          <div data-file="Setup-Gemini-CLI.html">Setup-Gemini-CLI.html</div>
+                          <div data-file="Gemini-CLI-Review.html">Gemini-CLI-Review.html</div>
+                    </div>
+
+                </div>
+        </div>
+    </div>
+    
+    <!-- НОВЫЙ HTML: Модальное окно (по умолчанию скрыто) --><div id="fileModal" class="modal-overlay hidden">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <!-- Заголовок модального окна --><div class="modal-header">
+                <h2 id="modalTitle" class="modal-title">[Имя папки]</h2>
+                <button id="modalCloseBtn" class="modal-close-btn" aria-label="Закрыть окно">×</button>
+            </div>
+            
+            <!-- Список файлов в модальном окне --><div id="modalFileList" class="modal-file-list">
+                <!-- Файлы будут вставлены сюда с помощью JavaScript --></div>
+        </div>
+    </div>
+
+
+    <!-- Footer --><footer class="w-full text-center text-gray-500 dark:text-gray-400 text-sm mt-8 mb-4">
+        <p>&copy; 2025. Все права защищены.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rootHtml = document.documentElement;
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+            
+            // --- Ссылки на DOM ---
+            const gridContainer = document.getElementById('folderGridContainer');
+            const folderDataContainer = document.getElementById('folderData');
+            const themeToggleButton = document.getElementById('themeToggleButton');
+            
+            // --- Ссылки на Модальное окно ---
+            const modal = document.getElementById('fileModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalFileList = document.getElementById('modalFileList');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+
+            // --- ФУНКЦИЯ РЕНДЕРИНГА (КАРТОЧКИ) ---
+            const renderFolderCards = (folders) => {
+                gridContainer.innerHTML = '';
+                
+                folders.forEach((folder) => {
+                    const card = document.createElement('button');
+                    card.classList.add('folder-card');
+                    card.setAttribute('type', 'button');
+                    
+                    const iconSpan = document.createElement('span');
+                    iconSpan.classList.add('folder-card-icon');
+
+                    // --- ГИБКАЯ ПРОВЕРКА НА ЗАМОК ---
+                    if (folder.isLocked) {
+                        
+                        // --- "ГЛАВНЫЙ РУБИЛЬНИК" ---
+                        // Эта строка ВКЛЮЧАЕТ замок на папке.
+                        iconSpan.classList.add('locked-folder-icon');
+                    }
+                    iconSpan.textContent = '📁'; // Всегда папка
+                    
+                    card.appendChild(iconSpan);
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.classList.add('folder-card-name');
+                    nameSpan.textContent = `[${folder.name}]`;
+                    card.appendChild(nameSpan);
+
+                    // Привязываем событие для открытия модального окна
+                    card.addEventListener('click', () => {
+                        openModal(folder);
+                    });
+                    
+                    gridContainer.appendChild(card);
+                });
+            };
+
+            // --- ФУНКЦИЯ ОТКРЫТИЯ МОДАЛЬНОГО ОКНА ---
+            const openModal = (folder) => {
+                // 1. Установить заголовок
+                modalTitle.textContent = `[${folder.name}]`;
+                
+                // 2. Очистить и заполнить список файлов
+                modalFileList.innerHTML = ''; // Очистить старые
+                
+                if (folder.files.length === 0) {
+                    modalFileList.innerHTML = '<p class="text-gray-500"><em>В этой папке нет файлов.</em></p>';
+                }
+                
+                folder.files.forEach(file => {
+                    // То же самое исправление URL, что и раньше
+                    const baseUrl = folder.name === 'dks5.github.io' 
+                        ? `https://dks5.github.io/${file.href}` 
+                        : `https://dks5.github.io/${folder.name}/${file.href}`;
+                    
+                    // --- ИСПРАВЛЕНИЕ ДВОЙНОГО КЛЮЧА ---
+                    let fileIcon = '📄';
+                    let displayName = file.name;
+
+                    if (file.name.startsWith('🔑')) {
+                        fileIcon = '🔑';
+                        // ИСПРАВЛЕНИЕ: Корректно удаляем мультибайтный эмодзи
+                        displayName = Array.from(file.name).slice(1).join('').trim();
+                    }
+                    
+                    const fileEl = document.createElement('div');
+                    fileEl.classList.add('modal-file-item');
+                    fileEl.innerHTML = `
+                        <span class="modal-file-item-icon">${fileIcon}</span>
+                        <a href="${baseUrl}" title="${file.name}">${displayName}</a>
+                    `;
+                    modalFileList.appendChild(fileEl);
+                });
+                
+                // 3. Показать модальное окно
+                modal.classList.remove('hidden');
+                modal.classList.add('open');
+            };
+            
+            // --- ФУНКЦИЯ ЗАКРЫТИЯ МОДАЛЬНОГО ОКНА ---
+            const closeModal = () => {
+                modal.classList.remove('open');
+                // Даем анимации затухания завершиться
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modalTitle.textContent = '';
+                    modalFileList.innerHTML = '';
+                }, 300); // 300ms, как в CSS transition
+            };
+
+            // --- ГИБКИЙ Парсер данных (с проверкой на 🔑) ---
+            const getFolderData = () => {
+                const folders = [];
+                Array.from(folderDataContainer.children).forEach(folderEl => {
+                    if (folderEl.tagName !== 'DIV' || !folderEl.dataset.folder) return; // Пропускаем комментарии
+                    
+                    const folderName = folderEl.dataset.folder;
+                    const files = [];
+                    let hasLockedFile = false; // Флаг для папки
+
+                    Array.from(folderEl.children).forEach(fileEl => {
+                        if (fileEl.tagName !== 'DIV' || !fileEl.dataset.file) return; // Пропускаем текст
+                        
+                        const fileName = fileEl.textContent;
+                        
+                        // Проверяем, начинается ли имя файла с ключа
+                        if (fileName.startsWith('🔑')) {
+                            hasLockedFile = true;
+                        }
+
+                        files.push({
+                            name: fileName,
+                            href: fileEl.dataset.file
+                        });
+                    });
+                    
+                    // Сортируем файлы по имени
+                    files.sort((a, b) => a.name.localeCompare(b.name));
+                    
+                    // Добавляем папку с флагом isLocked
+                    folders.push({ 
+                        name: folderName, 
+                        files: files, 
+                        isLocked: hasLockedFile // Добавляем свойство
+                    });
+                });
+                
+                // Сортируем папки по имени
+                folders.sort((a, b) => a.name.localeCompare(b.name));
+                return folders;
+            };
+
+            const folders = getFolderData();
+            renderFolderCards(folders);
+            
+            // --- События закрытия модального окна ---
+            modalCloseBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                // Закрываем, если клик был по самому оверлею (фону)
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            // --- Theme Toggle Logic (без изменений) ---
+            const currentTheme = localStorage.getItem('theme');
+            if (currentTheme === 'dark' || (!currentTheme && prefersDark.matches)) {
+                rootHtml.classList.add('dark');
+                themeToggleButton.textContent = 'Светлая тема';
+            } else {
+                themeToggleButton.textContent = 'Тёмная тема';
+            }
+            
+            prefersDark.addEventListener('change', (e) => {
+                if (!localStorage.getItem('theme')) {
+                    if (e.matches) {
+                        rootHtml.classList.add('dark');
+                    } else {
+                        rootHtml.classList.remove('dark');
+                    }
+                    themeToggleButton.textContent = rootHtml.classList.contains('dark') ? 'Светлая тема' : 'Тёмная тема';
+                }
+            });
+            
+            themeToggleButton.addEventListener('click', () => {
+                rootHtml.classList.toggle('dark');
+                if (rootHtml.classList.contains('dark')) {
+                    localStorage.setItem('theme', 'dark');
+                    themeToggleButton.textContent = 'Светлая тема';
+                } else {
+                    localStorage.setItem('theme', 'light');
+                    themeToggleButton.textContent = 'Тёмная тема';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
