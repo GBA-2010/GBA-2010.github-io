@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Установка и активация Office 2016 Pro Plus</title>
+    <style>
+        :root {
+            --bg-body: #f3f4f6;
+            --bg-container: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --accent-color: #0ea5e9;
+            --result-bg: #f8fafc;
+            --result-border: #cbd5e1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--bg-container);
+            padding: 50px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        h1 {
+            color: var(--text-primary);
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 15px;
+            margin-bottom: 40px;
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+
+        h2 {
+            margin-top: 60px;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+        }
+
+        .step-badge {
+            background-color: var(--accent-color);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            margin-right: 15px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+        }
+
+        /* --- БЛОК КОДА (Стиль Deep Steel) --- */
+        .terminal-block {
+            background-color: #334155; 
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            border: 1px solid #475569;
+        }
+
+        .terminal-header {
+            background-color: #1e293b;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #475569;
+        }
+
+        .terminal-title {
+            color: #cbd5e1;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: #ffffff;
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .copy-btn.copied {
+            color: #4ade80;
+        }
+
+        .code-content {
+            padding: 20px;
+            color: #f1f5f9;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        /* PowerShell Syntax Highlighting (Medium Theme) */
+        .cmdlet { color: #7dd3fc; font-weight: 600; }
+        .string { color: #86efac; }
+        .variable { color: #fde047; }
+        .param { color: #d8b4fe; }
+        .operator { color: #cbd5e1; }
+        .comment { color: #94a3b8; font-style: italic; }
+
+        /* Результат */
+        .result-block {
+            background-color: #f8fafc;
+            border-left: 4px solid var(--accent-color);
+            border: 1px solid #e2e8f0;
+            border-left-width: 4px;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            color: #334155;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .result-label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.05em;
+        }
+
+        .toast {
+            visibility: hidden;
+            background-color: #334155;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 12px 24px;
+            position: fixed;
+            z-index: 100;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 40px;
+        }
+
+        /* Стиль для ручного действия */
+        .manual-action-box {
+            background-color: #e0f2fe; /* Light sky blue */
+            border: 1px solid #7dd3fc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: #0c4a6e;
+        }
+        .manual-action-box a {
+            display: inline-block;
+            background-color: #0284c7;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .manual-action-box a:hover {
+            background-color: #0369a1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Установка и активация Office 2016 Pro Plus</h1>
+    <p>Полный цикл развертывания (Zero-GUI): от загрузки утилиты до активации, выполненный исключительно через командную строку PowerShell.</p>
+
+    <!-- STEP 1 -->
+    <h2><span class="step-badge">1</span>Создание рабочей среды</h2>
+    <p>Создадим рабочую директорию <code>C:\ODT</code> и перейдем в нее.</p>
+
+    <div class="terminal-block">
+        <div class="terminal-header">
+            <span class="terminal-title">PowerShell (Admin)</span>
+            <button class="copy-btn" onclick="copyCode(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+        </div>
+        <div class="code-content"><span class="cmdlet">New-Item</span> <span class="param">-Path</span> <span class="string">"C:\ODT"</span> <span class="param">-ItemType</span> Directory <span class="param">-Force</span>; <span class="cmdlet">Set-Location</span> <span class="param">-Path</span> <span class="string">"C:\ODT"</span></div>
+    </div>
+
+    <div class="result-block">
+        <span class="result-label">Ожидаемый результат:</span>
+        Команды выполнятся без вывода сообщений. Курсор перейдет на новую строку, а путь слева от него изменится на <code>PS C:\ODT&gt;</code>.
+    </div>
+
+    <!-- STEP 2 -->
+    <h2><span class="step-badge">2</span>Загрузка и проверка ODT (Важно!)</h2>
+    <p>Мы разделили этот этап на шаги, чтобы избежать ошибок с битыми файлами. Выполняйте команды строго по очереди.</p>
+
+    <p><strong>2.1 Очистка папки</strong> (удаляем битый файл)</p>
+    <div class="terminal-block">
+        <div class="terminal-header">
+            <span class="terminal-title">PowerShell (Admin)</span>
+            <button class="copy-btn" onclick="copyCode(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+        </div>
+        <div class="code-content"><span class="cmdlet">Remove-Item</span> <span class="param">-Path</span> <span class="string">"C:\ODT\odt.exe"</span> <span class="param">-Force</span> <span class="param">-ErrorAction</span> SilentlyContinue</div>
+    </div>
+
+    <p><strong>2.2 Загрузка файла (Вручную через браузер)</strong></p>
+    <div class="manual-action-box">
+        <strong>Инструкция для браузера:</strong>
+        <ol>
+            <li>Нажмите на кнопку ниже, чтобы скачать файл.</li>
+            <li>При сохранении выберите папку <code>C:\ODT</code>.</li>
+            <li>Если файл скачался с длинным именем, не беспокойтесь, следующий шаг это исправит.</li>
+        </ol>
+        <a href="https://go.microsoft.com/fwlink/p/?LinkID=626065" target="_blank">Скачать Office Deployment Tool</a>
+    </div>
+
+    <p><strong>2.3 Исправление имени файла</strong> (Если имя длинное)</p>
+    <p>Эта команда найдет файл <code>officedeploymenttool_...exe</code> и переименует его в <code>odt.exe</code>.</p>
+    <div class="terminal-block">
+        <div class="terminal-header">
+            <span class="terminal-title">PowerShell (Admin)</span>
+            <button class="copy-btn" onclick="copyCode(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+        </div>
+        <div class="code-content"><span class="cmdlet">Get-ChildItem</span> <span class="string">"C:\ODT\officedeploymenttool_*.exe"</span> <span class="param">-ErrorAction</span> SilentlyContinue | <span class="cmdlet">Rename-Item</span> <span class="param">-NewName</span> <span class="string">"odt.exe"</span></div>
+    </div>
+
+    <p><strong>2.4 Проверка размера</strong> (Обязательно проверьте, что скачали правильно)</p>
+    <div class="terminal-block">
+        <div class="terminal-header">
+            <span class="terminal-title">PowerShell (Admin)</span>
+            <button class="copy-btn" onclick="copyCode(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+        </div>
+        <div class="code-content">(<span class="cmdlet">Get-Item</span> <span class="string">"C:\ODT\odt.exe"</span>).Length / 1MB</div>
+    </div>
+
+    <div class="result-block">
+        <span class="result-label">Как проверить результат:</span>
+        <ul>
+            <li>Если число <strong>больше 5</strong> (например, 5.2) — ПОБЕДА! Переходите к шагу 2.5.</li>
+            <li>Если число меньше 1 — вы не туда сохранили файл или скачался не тот файл.</li>
+        </ul>
+    </div>
+
+    <p><strong>2.5 Распаковка</strong> (только если проверка прошла успешно)</p>
+    <div class="terminal-block">
+        <div class="terminal-header">
+            <span class="terminal-title">PowerShell (Admin)</span>
+            <button class="copy-btn" onclick="copyCode(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+        </div>
+        <div class="code-content"><span class="cmdlet">Start-Process</span> <span class="param">-FilePath</span> <span class="string">".\odt.exe"</span> <span class="param">-ArgumentList</span> <span class="string">"/quiet /extract:C:\ODT"</span> <span class="param">-Wait</span></div>
+    </div>
+
+    <div class="result-block">
+        <span class="result-label">Ожидаемый результат:</span>
+        Команда выполнится за пару секунд. Ошибок быть не должно. В папке <code>C:\ODT</code> появится файл <code>setup.exe</code>.
+    </div>
+
+    <!-- STEP 3 -->
+    <h2><span class="step-badge">3</span>Генерация конфигурации XML (Office 2016)</h2>
+    <p>Сформируем файл настроек для <strong>Office 2016 Professional Plus</strong> (Retail). Используем <code>ProPlusRetail</code>, так как это стандарт для ODT.</p>
+
+    <div class="terminal-block">
+        <div class="terminal-header">
+            <span class="terminal-title">PowerShell (Admin)</span>
+            <button class="copy-btn" onclick="copyCode(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+        </div>
+        <div class="code-content"><span class="variable">$ConfigContent</span> = <span class="string">@"
+&lt;Configuration&gt;
+  &lt;Add OfficeClientEdition="64" Channel="Current"&gt;
+    &lt;Product ID="ProPlusRetail"&gt;
+      &lt;Language ID="ru-ru" /&gt;
+      &lt;ExcludeApp ID="Lync" /&gt;
+      &lt;ExcludeApp ID="OneDrive" /&gt;
+    &lt;/Product&gt;
+  &lt;/Add&gt;
+  &lt;Display Level="None" AcceptEULA="TRUE" /&gt;
+&lt;/Configuration&gt;
+"@</span>
+
+<span class="variable">$ConfigContent</span> | <span class="cmdlet">Out-File</span> <span class="param">-FilePath</span> <span class="string">"configuration.xml"</span> <span class="param">-Encoding</span> UTF8</div>
+    </div>
+
+    <div class="result-block">
+        <span class="result-label">Ожидаемый результат:</span>
+        Будет создан файл <code>configuration.xml</code> для Office 2016. Вывод в консоль отсутствует.
+    </div>
+
+    <!-- STEP 4 -->
+    <h2><span class="step-badge">4</span>Загрузка дистрибутива</h2>
+    <p>Запустим процесс загрузки файлов установки. Команда обратится к CDN Microsoft.</p>
+
+    <div class="terminal-block">
+        <div class="terminal-header">
+            <span class="terminal-title">PowerShell (Admin)</span>
+            <button class="copy-btn" onclick="copyCode(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+        </div>
+        <div class="code-content"><span class="cmdlet">.\setup.exe</span> <span class="string">/download</span> <span class="string">configuration.xml</span></div>
+    </div>
+
+    <div class="result-block">
+        <span class="result-label">Ожидаемый результат:</span>
+        Появится папка "Office" (~2-3 ГБ). Курсор в консоли "замрет" на время загрузки (5-10 мин).
+    </div>
+
+    <!-- STEP 5 -->
+    <h2><span class="step-badge">5</span>Установка</h2>
+    <p>Финальная команда. Установка пройдет в фоновом режиме (silent install) благодаря параметру <code>Display Level="None"</code> в XML.</p>
+
+    <div class="terminal-block">
+        <div class="terminal-header">
+            <span class="terminal-title">PowerShell (Admin)</span>
+            <button class="copy-btn" onclick="copyCode(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+        </div>
+        <div class="code-content"><span class="cmdlet">.\setup.exe</span> <span class="string">/configure</span> <span class="string">configuration.xml</span></div>
+    </div>
+
+    <div class="result-block">
+        <span class="result-label">Ожидаемый результат:</span>
+        Начнется установка. Через 15-30 минут приложения Office появятся в меню "Пуск". Окон не будет.
+    </div>
+
+    <!-- STEP 6: UNINSTALL via POWERSHELL -->
+    <h2><span class="step-badge">6</span>Удаление Office (PowerShell)</h2>
+    <p>Если вам нужно удалить текущую версию Office, мы используем ту же утилиту ODT. Сначала создадим конфигурацию для удаления.</p>
+
+    <div class="terminal-block">
+        <div class="terminal-header">
+            <span class="terminal-title">PowerShell (Admin)</span>
+            <button class="copy-btn" onclick="copyCode(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+        </div>
+        <div class="code-content"><span class="variable">$RemoveContent</span> = <span class="string">@"
+&lt;Configuration&gt;
+  &lt;Remove All="TRUE" /&gt;
+&lt;/Configuration&gt;
+"@</span>
+
+<span class="variable">$RemoveContent</span> | <span class="cmdlet">Out-File</span> <span class="param">-FilePath</span> <span class="string">"remove.xml"</span> <span class="param">-Encoding</span> UTF8
+
+<span class="cmdlet">.\setup.exe</span> <span class="string">/configure</span> <span class="string">remove.xml</span></div>
+    </div>
+
+    <div class="result-block">
+        <span class="result-label">Ожидаемый результат:</span>
+        Запустится процесс удаления. После завершения компьютер желательно перезагрузить.
+    </div>
+
+    <!-- STEP 7: SARA TOOL -->
+    <h2><span class="step-badge">7</span>Полная очистка (SaRA Tool)</h2>
+    <p>Если удаление через PowerShell не помогло (или есть конфликт 32/64 бит), используйте официальную утилиту очистки от Microsoft. Она лучше любых скриптов.</p>
+
+    <div class="manual-action-box">
+        <strong>Как исправить ошибку удаления:</strong>
+        <ol>
+            <li>Скачайте официальную утилиту <strong>Microsoft Support and Recovery Assistant</strong>.</li>
+            <li>Запустите скачанный файл (SetupProd_OffScrub.exe).</li>
+            <li>В окне программы выберите версию Office, которую нужно удалить (или выберите "All versions").</li>
+            <li>Нажмите "Next" и дождитесь окончания процесса.</li>
+            <li><strong>Обязательно перезагрузите компьютер</strong> после очистки.</li>
+        </ol>
+        <a href="https://aka.ms/SaRA-officeUninstallFromPC" target="_blank">Скачать SaRA Tool (Microsoft)</a>
+    </div>
+
+    <div class="result-block">
+        <span class="result-label">После перезагрузки:</span>
+        Снова выполните <strong>Шаг 5</strong> (команда установки). Теперь всё должно пройти гладко.
+    </div>
+
+    <!-- STEP 8: CHECK LICENSE -->
+    <h2><span class="step-badge">8</span>Проверка статуса лицензии</h2>
+    <p>Узнаем, почему Office активирован: это постоянная лицензия или временный период. Используем системный скрипт <code>ospp.vbs</code>.</p>
+
+    <div class="terminal-block">
+        <div class="terminal-header">
+            <span class="terminal-title">PowerShell (Admin)</span>
+            <button class="copy-btn" onclick="copyCode(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+        </div>
+        <div class="code-content"><span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/dstatus</span></div>
+    </div>
+
+    <div class="result-block">
+        <span class="result-label">Что искать в тексте:</span>
+        <ul>
+            <li><strong>LICENSE NAME:</strong> Office 16 или Office 21. Если видите Office 16 — это нормально для 2016-й и 2019-й версий.</li>
+            <li><strong>LICENSE STATUS: ---LICENSED---</strong> — Активирован навсегда.</li>
+            <li><strong>LICENSE STATUS: ---OOB_GRACE---</strong> — Временный период (обычно 5 дней).</li>
+        </ul>
+    </div>
+
+    <!-- STEP 9: ACTIVATION KEYS -->
+    <h2><span class="step-badge">9</span>Активация (Установка ключа)</h2>
+    <p>Если у вас есть собственный ключ продукта или вы хотите использовать официальный GVLK-ключ (для KMS-активации), используйте команды ниже. Мы разделили процесс на два этапа.</p>
+
+    <p><strong>9.1 Установка ключа продукта</strong></p>
+    <p>Эта команда вносит ключ в реестр. В примере указан ключ для Office 2016 Pro Plus.</p>
+    <div class="terminal-block">
+        <div class="terminal-header">
+            <span class="terminal-title">PowerShell (Admin)</span>
+            <button class="copy-btn" onclick="copyCode(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+        </div>
+        <div class="code-content"><span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/inpkey:XQNVK-8JYDB-WJ9W3-YJ8YR-WFG99</span></div>
+    </div>
+    
+    <div class="result-block">
+        <span class="result-label">Ожидаемый результат:</span>
+        Сообщение <strong>&lt;Product key installation successful&gt;</strong>.
+    </div>
+
+    <p><strong>9.2 Принудительная активация</strong></p>
+    <p>Эта команда заставляет Office немедленно связаться с сервером активации.</p>
+    <div class="terminal-block">
+        <div class="terminal-header">
+            <span class="terminal-title">PowerShell (Admin)</span>
+            <button class="copy-btn" onclick="copyCode(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+        </div>
+        <div class="code-content"><span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/act</span></div>
+    </div>
+
+    <div class="result-block">
+        <span class="result-label">Ожидаемый результат:</span>
+        Сообщение <strong>&lt;Product activation successful&gt;</strong>.
+    </div>
+
+    <div class="result-block" style="border-left-color: #f59e0b;">
+        <span class="result-label">Справочник GVLK (Официальные ключи Microsoft):</span>
+        <ul>
+            <li><strong>Office 2016 Pro Plus:</strong> <code>XQNVK-8JYDB-WJ9W3-YJ8YR-WFG99</code></li>
+            <li><strong>Office 2016 Standard:</strong> <code>JNRGM-WHDWX-FJJG3-K47QV-DRTFM</code></li>
+            <li><strong>Office 2019 Pro Plus:</strong> <code>NMMKJ-6RK4F-KMJVX-8D9MJ-6MWKP</code></li>
+        </ul>
+        <br>
+        <em>Примечание: Ключи GVLK работают только с Volume-версиями и требуют наличия KMS-сервера в сети.</em>
+    </div>
+
+</div>
+
+<div id="toast" class="toast">Команда скопирована!</div>
+
+<script>
+    async function copyCode(btn) {
+        const container = btn.closest('.terminal-block');
+        const code = container.querySelector('.code-content').innerText;
+        
+        try {
+            await navigator.clipboard.writeText(code);
+            showSuccess(btn);
+        } catch (err) {
+            // Fallback for older browsers
+            const el = document.createElement('textarea');
+            el.value = code;
+            el.style.position = 'absolute';
+            el.style.left = '-9999px';
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showSuccess(btn);
+        }
+    }
+
+    function showSuccess(btn) {
+        const originalText = btn.innerHTML;
+        btn.classList.add('copied');
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        
+        const toast = document.getElementById("toast");
+        toast.classList.add("show");
+        
+        setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = originalText;
+            toast.classList.remove("show");
+        }, 2000);
+    }
+</script>
+
+</body>
+</html>
