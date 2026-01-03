@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activation Assistant Suite</title>
+    <style>
+        :root { --bg-app: #eff4ff; --bg-white: #ffffff; --text-main: #1a202c; --text-secondary: #718096; --primary-blue: #0056b3; --inactive-tab: #f3f4f6; --border-light: #e2e8f0; --code-header: #edf2f7; --alert-bg: #fffaf0; --alert-text: #c05621; --success-bg: #f0fff4; --success-text: #2f855a; --shadow-window: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background-color: var(--bg-app); color: var(--text-main); margin: 0; padding: 40px 20px; display: flex; justify-content: center; min-height: 100vh; }
+        .app-window { width: 100%; max-width: 900px; background: var(--bg-white); border-radius: 12px; box-shadow: var(--shadow-window); overflow: hidden; display: flex; flex-direction: column; }
+        .window-header { padding: 16px 24px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; position: relative; background: #fff; }
+        .window-controls { display: flex; gap: 8px; position: absolute; left: 24px; }
+        .control-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot-red { background-color: #fc8181; } .dot-yellow { background-color: #f6ad55; } .dot-green { background-color: #68d391; }
+        .window-title-area { margin: 0 auto; display: flex; align-items: center; gap: 10px; }
+        .window-title { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .tabs { display: flex; padding: 16px 24px; gap: 10px; background: var(--bg-white); user-select: none; overflow-x: auto; border-bottom: 1px solid var(--border-light); }
+        .tab { padding: 8px 20px; border-radius: 999px; font-weight: 500; font-size: 14px; color: var(--text-main); background-color: var(--inactive-tab); cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .tab:hover { background-color: #e2e8f0; } .tab.active { background-color: var(--primary-blue); color: white; box-shadow: 0 2px 4px rgba(0, 86, 179, 0.2); }
+        .content-area { padding: 32px 40px; background: #fff; min-height: 400px; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; } .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 28px; font-weight: 800; margin: 0 0 12px 0; color: #1a202c; }
+        .description { color: var(--text-secondary); margin-bottom: 24px; font-size: 16px; }
+        .alert-box { background-color: var(--alert-bg); color: var(--alert-text); padding: 16px 20px; border-radius: 8px; margin-bottom: 32px; display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; border: 1px solid rgba(237, 137, 54, 0.2); }
+        .step-container { margin-bottom: 40px; }
+        .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .step-badge { background-color: var(--primary-blue); color: white; padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+        .step-title { font-size: 18px; font-weight: 700; color: #2d3748; }
+        .code-card { border: 1px solid var(--border-light); border-radius: 8px; overflow: hidden; margin-bottom: 8px; background: white; }
+        .code-header { background-color: var(--code-header); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); }
+        .code-label { font-size: 11px; font-weight: 700; color: #4a5568; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
+        .copy-btn { background: transparent; border: none; cursor: pointer; color: var(--primary-blue); padding: 4px; display: flex; transition: opacity 0.2s; }
+        .copy-btn:hover { opacity: 0.7; }
+        .code-content { padding: 20px; font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; color: #2d3748; background-color: #fff; overflow-x: auto; white-space: pre-wrap; line-height: 1.5; }
+        .exec-wrapper { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+        .btn-exec { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: #475569; transition: all 0.2s; user-select: none; }
+        .btn-exec:hover { border-color: #94a3b8; background: #f8fafc; }
+        .exec-check { width: 16px; height: 16px; border: 1px solid #cbd5e1; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; background: #fff; }
+        .btn-exec.done { background: #f0fff4; border-color: #86efac; color: #166534; }
+        .btn-exec.done .exec-check { background: #22c55e; border-color: #22c55e; }
+        .exec-check svg { display: none; color: white; }
+        .btn-exec.done .exec-check svg { display: block; }
+        .success-box { background-color: var(--success-bg); color: var(--success-text); padding: 10px 16px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(72,187,120,0.2); margin-top: 0; }
+        .manual-action { border: 1px dashed var(--primary-blue); background-color: #ebf8ff; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 16px; }
+        .btn-download { display: inline-block; background-color: var(--primary-blue); color: white; padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px; margin-top: 8px; }
+        .key-grid { display: grid; grid-template-columns: 1fr; gap: 16px; } @media (min-width: 768px) { .key-grid { grid-template-columns: 1fr 1fr; } }
+        .terminal-icon { color: #4a5568; } .cmdlet { color: #3182ce; font-weight: bold; } .string { color: #38a169; } .param { color: #805ad5; } .comment { color: #718096; font-style: italic; }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: #2d3748; color: white; padding: 10px 20px; border-radius: 8px; font-size: 14px; opacity: 0; visibility: hidden; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; }
+        .toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="app-window">
+    <div class="window-header">
+        <div class="window-controls"><div class="control-dot dot-red"></div><div class="control-dot dot-yellow"></div><div class="control-dot dot-green"></div></div>
+        <div class="window-title-area">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="6" fill="#4ADE80"/><path d="M8 12L11 15L16 9" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="window-title">Activation Assistant Suite</span>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-target="view-2016">Office 2016</div>
+        <div class="tab" data-target="view-2021">Office 2021</div>
+        <div class="tab" data-target="view-visio">Visio</div>
+        <div class="tab" data-target="view-apps">Приложения</div>
+        <div class="tab" data-target="view-keys">Ключи продукта</div>
+    </div>
+
+    <div class="content-area">
+
+        <!-- ================= VIEW: OFFICE 2016 ================= -->
+        <div id="view-2016" class="tab-content active">
+            <h1>Установка Office 2016 Pro Plus</h1>
+            <p class="description">Полный цикл развертывания через ODT.</p>
+
+            <!-- STEP 0 -->
+            <div class="step-container"><div class="step-header"><span class="step-badge">ШАГ 0</span><span class="step-title">Вход в папку</span></div><div class="code-card"><div class="code-header"><span class="code-label"><svg class="terminal-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div><div class="code-content"><span class="cmdlet">Set-Location</span> <span class="param">-Path</span> <span class="string">"C:\ODT"</span></div></div><div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div></div>
+
+            <!-- STEP 1-5 (Install) -->
+            <div class="step-container"><div class="step-header"><span class="step-badge">ШАГ 1-5</span><span class="step-title">Установка</span></div>
+            <div class="code-card"><div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+            <div class="code-content"><span class="comment"># 1. Создание папки</span>
+<span class="cmdlet">New-Item</span> <span class="param">-Path</span> <span class="string">"C:\ODT"</span> <span class="param">-ItemType</span> Directory <span class="param">-Force</span>; <span class="cmdlet">Set-Location</span> <span class="string">"C:\ODT"</span>
+<span class="comment"># 2. Загрузка ODT</span>
+<span class="cmdlet">Invoke-WebRequest</span> <span class="string">"https://go.microsoft.com/fwlink/p/?LinkID=626065"</span> <span class="param">-OutFile</span> <span class="string">"odt.exe"</span>; <span class="cmdlet">.\odt.exe</span> <span class="string">/quiet /extract:C:\ODT</span>
+<span class="comment"># 3. Конфигурация</span>
+<span class="cmdlet">Set-Content</span> <span class="string">"configuration.xml"</span> <span class="string">'&lt;Configuration&gt;&lt;Add OfficeClientEdition="64" Channel="Current"&gt;&lt;Product ID="ProPlusRetail"&gt;&lt;Language ID="ru-ru"/&gt;&lt;/Product&gt;&lt;/Add&gt;&lt;Display Level="None" AcceptEULA="TRUE"/&gt;&lt;/Configuration&gt;'</span>
+<span class="comment"># 4. Установка</span>
+<span class="cmdlet">.\setup.exe</span> <span class="string">/configure</span> <span class="string">configuration.xml</span></div></div>
+            <div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div>
+            <div class="success-box">Ожидаемый результат: Office 2016 установлен.</div></div>
+
+            <!-- STEP 6-8 (Activate) -->
+            <div class="step-container"><div class="step-header"><span class="step-badge">ШАГ 6-8</span><span class="step-title">Активация</span></div>
+            <div class="code-card"><div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+            <div class="code-content"><span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/inpkey:XQNVK-8JYDB-WJ9W3-YJ8YR-WFG99</span>
+<span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/sethst:kms.digiboy.ir</span>
+<span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/act</span></div></div>
+            <div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div>
+            <div class="success-box">Ожидаемый результат: &lt;Product activation successful&gt;</div></div>
+
+            <!-- STEP 10: RESET -->
+            <div class="step-container"><div class="step-header"><span class="step-badge">ШАГ 10</span><span class="step-title">Сброс активации</span></div>
+            <div class="code-card"><div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+            <div class="code-content"><span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/dstatus</span>
+<span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/unpkey:XXXXX</span></div></div>
+            <div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div></div>
+
+            <!-- STEP 11: HARD UNINSTALL -->
+            <div class="step-container" style="border-top: 2px dashed #e2e8f0; padding-top: 20px;">
+                <div class="step-header"><span class="step-badge" style="background:#ef4444">ШАГ 11</span><span class="step-title">Полная очистка (Hard Uninstall)</span></div>
+                <div class="code-card">
+                    <div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                    <div class="code-content"><span class="comment"># 1. Удаление Appx</span>
+<span class="cmdlet">Get-AppxPackage</span> <span class="param">-Name</span> *Microsoft.Office.Desktop* | <span class="cmdlet">Remove-AppxPackage</span> <span class="param">-ErrorAction</span> SilentlyContinue
+<span class="comment"># 2. Очистка реестра</span>
+<span class="cmdlet">Remove-Item</span> <span class="param">-Path</span> <span class="string">"HKLM:\SOFTWARE\Microsoft\Office\ClickToRun"</span> <span class="param">-Recurse</span> <span class="param">-Force</span>
+<span class="cmdlet">Remove-Item</span> <span class="param">-Path</span> <span class="string">"HKLM:\SOFTWARE\Microsoft\AppVISV"</span> <span class="param">-Recurse</span> <span class="param">-Force</span>
+<span class="cmdlet">Remove-Item</span> <span class="param">-Path</span> <span class="string">"HKCU:\Software\Microsoft\Office"</span> <span class="param">-Recurse</span> <span class="param">-Force</span>
+<span class="comment"># 3. Проверка ключей</span>
+<span class="cmdlet">Get-CimInstance</span> SoftwareLicensingProduct <span class="param">-Filter</span> <span class="string">"PartialProductKey IS NOT NULL"</span> | <span class="cmdlet">Where-Object</span> { <span class="variable">$_</span>.Name <span class="operator">-like</span> <span class="string">"*Office*"</span> }</div>
+                </div>
+                <div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div>
+                <div class="success-box">Ожидаемый результат: Система очищена от Office.</div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW: OFFICE 2021 ================= -->
+        <div id="view-2021" class="tab-content">
+            <h1>Установка Office 2021 Pro Plus</h1>
+            <p class="description">Полный цикл развертывания через ODT (LTSC).</p>
+
+            <!-- STEP 0 -->
+            <div class="step-container"><div class="step-header"><span class="step-badge">ШАГ 0</span><span class="step-title">Вход в папку</span></div><div class="code-card"><div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div><div class="code-content"><span class="cmdlet">Set-Location</span> <span class="param">-Path</span> <span class="string">"C:\ODT"</span></div></div><div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div></div>
+
+            <!-- STEP 1-5 (Install 2021) -->
+            <div class="step-container"><div class="step-header"><span class="step-badge">ШАГ 1-5</span><span class="step-title">Установка</span></div>
+            <div class="code-card"><div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+            <div class="code-content"><span class="comment"># 1. Создание папки</span>
+<span class="cmdlet">New-Item</span> <span class="param">-Path</span> <span class="string">"C:\ODT"</span> <span class="param">-ItemType</span> Directory <span class="param">-Force</span>; <span class="cmdlet">Set-Location</span> <span class="string">"C:\ODT"</span>
+<span class="comment"># 2. Загрузка ODT</span>
+<span class="cmdlet">Invoke-WebRequest</span> <span class="string">"https://go.microsoft.com/fwlink/p/?LinkID=626065"</span> <span class="param">-OutFile</span> <span class="string">"odt.exe"</span>; <span class="cmdlet">.\odt.exe</span> <span class="string">/quiet /extract:C:\ODT</span>
+<span class="comment"># 3. Конфигурация 2021</span>
+<span class="cmdlet">Set-Content</span> <span class="string">"configuration.xml"</span> <span class="string">'&lt;Configuration&gt;&lt;Add OfficeClientEdition="64" Channel="Current"&gt;&lt;Product ID="ProPlus2021Retail"&gt;&lt;Language ID="ru-ru"/&gt;&lt;/Product&gt;&lt;/Add&gt;&lt;Display Level="None" AcceptEULA="TRUE"/&gt;&lt;/Configuration&gt;'</span>
+<span class="comment"># 4. Установка</span>
+<span class="cmdlet">.\setup.exe</span> <span class="string">/configure</span> <span class="string">configuration.xml</span></div></div>
+            <div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div>
+            <div class="success-box">Ожидаемый результат: Office 2021 установлен.</div></div>
+
+            <!-- STEP 6-8 (Activate 2021) -->
+            <div class="step-container"><div class="step-header"><span class="step-badge">ШАГ 6-8</span><span class="step-title">Активация</span></div>
+            <div class="code-card"><div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+            <div class="code-content"><span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/inpkey:FXYTK-NJJ8C-GB6DW-3DYQT-6F7TH</span>
+<span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/sethst:kms.digiboy.ir</span>
+<span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/act</span></div></div>
+            <div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div>
+            <div class="success-box">Ожидаемый результат: &lt;Product activation successful&gt;</div></div>
+
+            <!-- STEP 10: RESET -->
+            <div class="step-container"><div class="step-header"><span class="step-badge">ШАГ 10</span><span class="step-title">Сброс активации</span></div>
+            <div class="code-card"><div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+            <div class="code-content"><span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/dstatus</span>
+<span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/unpkey:XXXXX</span></div></div>
+            <div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div></div>
+
+            <!-- STEP 11: HARD UNINSTALL -->
+            <div class="step-container" style="border-top: 2px dashed #e2e8f0; padding-top: 20px;">
+                <div class="step-header"><span class="step-badge" style="background:#ef4444">ШАГ 11</span><span class="step-title">Полная очистка (Hard Uninstall)</span></div>
+                <div class="code-card">
+                    <div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                    <div class="code-content"><span class="comment"># 1. Удаление Appx</span>
+<span class="cmdlet">Get-AppxPackage</span> <span class="param">-Name</span> *Microsoft.Office.Desktop* | <span class="cmdlet">Remove-AppxPackage</span> <span class="param">-ErrorAction</span> SilentlyContinue
+<span class="comment"># 2. Очистка реестра</span>
+<span class="cmdlet">Remove-Item</span> <span class="param">-Path</span> <span class="string">"HKLM:\SOFTWARE\Microsoft\Office\ClickToRun"</span> <span class="param">-Recurse</span> <span class="param">-Force</span>
+<span class="cmdlet">Remove-Item</span> <span class="param">-Path</span> <span class="string">"HKLM:\SOFTWARE\Microsoft\AppVISV"</span> <span class="param">-Recurse</span> <span class="param">-Force</span>
+<span class="cmdlet">Remove-Item</span> <span class="param">-Path</span> <span class="string">"HKCU:\Software\Microsoft\Office"</span> <span class="param">-Recurse</span> <span class="param">-Force</span>
+<span class="comment"># 3. Проверка ключей</span>
+<span class="cmdlet">Get-CimInstance</span> SoftwareLicensingProduct <span class="param">-Filter</span> <span class="string">"PartialProductKey IS NOT NULL"</span> | <span class="cmdlet">Where-Object</span> { <span class="variable">$_</span>.Name <span class="operator">-like</span> <span class="string">"*Office*"</span> }</div>
+                </div>
+                <div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div>
+                <div class="success-box">Ожидаемый результат: Система очищена от Office.</div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW: VISIO ================= -->
+        <div id="view-visio" class="tab-content">
+            <h1>Установка Visio (2016 / 2021)</h1>
+            <p class="description">Установка дополнительного компонента Visio Professional.</p>
+
+            <div class="step-container"><div class="step-header"><span class="step-badge">ШАГ 1</span><span class="step-title">Установка и Активация</span></div>
+            <div class="code-card"><div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+            <div class="code-content"><span class="comment"># Visio 2016</span>
+<span class="cmdlet">Set-Location</span> <span class="string">"C:\ODT"</span>; <span class="cmdlet">Set-Content</span> <span class="string">"visio16.xml"</span> <span class="string">'&lt;Configuration&gt;&lt;Add OfficeClientEdition="64"&gt;&lt;Product ID="VisioProRetail"&gt;&lt;Language ID="ru-ru"/&gt;&lt;/Product&gt;&lt;/Add&gt;&lt;Display Level="Full" AcceptEULA="TRUE"/&gt;&lt;/Configuration&gt;'</span>; <span class="cmdlet">.\setup.exe</span> <span class="string">/configure</span> <span class="string">visio16.xml</span>
+<span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/inpkey:PD3PC-RHNGV-FXJ29-8JK7D-RJRJK</span>
+<span class="cmdlet">cscript</span> <span class="string">"C:\Program Files\Microsoft Office\Office16\OSPP.VBS"</span> <span class="param">/act</span></div></div>
+            <div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div>
+            <div class="success-box">Ожидаемый результат: Visio 2016 установлен и активирован.</div></div>
+
+            <div class="step-container"><div class="step-header"><span class="step-badge">ШАГ 3</span><span class="step-title">Удаление Visio</span></div>
+            <div class="code-card"><div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+            <div class="code-content"><span class="comment"># Удаление Visio</span>
+<span class="cmdlet">Set-Location</span> <span class="string">"C:\ODT"</span>; <span class="cmdlet">Set-Content</span> <span class="string">"remove_visio.xml"</span> <span class="string">'&lt;Configuration&gt;&lt;Remove&gt;&lt;Product ID="VisioProRetail"/&gt;&lt;Product ID="VisioPro2021Retail"/&gt;&lt;/Remove&gt;&lt;Display Level="None" AcceptEULA="TRUE"/&gt;&lt;/Configuration&gt;'</span>; <span class="cmdlet">.\setup.exe</span> <span class="string">/configure</span> <span class="string">remove_visio.xml</span></div></div>
+            <div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div>
+            <div class="success-box">Ожидаемый результат: Visio удален.</div></div>
+        </div>
+
+        <!-- ================= VIEW: APPS ================= -->
+        <div id="view-apps" class="tab-content">
+            <h1>Отдельные приложения</h1>
+            <div class="step-container"><div class="step-header"><span class="step-badge">OUTLOOK</span><span class="step-title">Установка Outlook 2021</span></div>
+            <div class="code-card"><div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+            <div class="code-content"><span class="cmdlet">Set-Location</span> <span class="string">"C:\ODT"</span>; <span class="cmdlet">Set-Content</span> <span class="string">"outlook.xml"</span> <span class="string">'&lt;Configuration&gt;&lt;Add OfficeClientEdition="64"&gt;&lt;Product ID="Outlook2021Retail"&gt;&lt;Language ID="ru-ru"/&gt;&lt;/Product&gt;&lt;/Add&gt;&lt;Display Level="None" AcceptEULA="TRUE"/&gt;&lt;/Configuration&gt;'</span>; <span class="cmdlet">.\setup.exe</span> <span class="string">/configure</span> <span class="string">outlook.xml</span></div></div>
+            <div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div>
+            <div class="success-box">Ожидаемый результат: Outlook установлен.</div></div>
+
+            <div class="step-container"><div class="step-header"><span class="step-badge">ACCESS</span><span class="step-title">Установка Access 2021</span></div>
+            <div class="code-card"><div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+            <div class="code-content"><span class="cmdlet">Set-Location</span> <span class="string">"C:\ODT"</span>; <span class="cmdlet">Set-Content</span> <span class="string">"access.xml"</span> <span class="string">'&lt;Configuration&gt;&lt;Add OfficeClientEdition="64"&gt;&lt;Product ID="Access2021Retail"&gt;&lt;Language ID="ru-ru"/&gt;&lt;/Product&gt;&lt;/Add&gt;&lt;Display Level="None" AcceptEULA="TRUE"/&gt;&lt;/Configuration&gt;'</span>; <span class="cmdlet">.\setup.exe</span> <span class="string">/configure</span> <span class="string">access.xml</span></div></div>
+            <div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div>
+            <div class="success-box">Ожидаемый результат: Access установлен.</div></div>
+
+            <div class="step-container"><div class="step-header"><span class="step-badge">ONENOTE</span><span class="step-title">Установка OneNote</span></div>
+            <div class="code-card"><div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+            <div class="code-content"><span class="cmdlet">Set-Location</span> <span class="string">"C:\ODT"</span>; <span class="cmdlet">Set-Content</span> <span class="string">"onenote.xml"</span> <span class="string">'&lt;Configuration&gt;&lt;Add OfficeClientEdition="64"&gt;&lt;Product ID="OneNoteFreeRetail"&gt;&lt;Language ID="ru-ru"/&gt;&lt;/Product&gt;&lt;/Add&gt;&lt;Display Level="None" AcceptEULA="TRUE"/&gt;&lt;/Configuration&gt;'</span>; <span class="cmdlet">.\setup.exe</span> <span class="string">/configure</span> <span class="string">onenote.xml</span></div></div>
+            <div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div>
+            <div class="success-box">Ожидаемый результат: OneNote установлен.</div></div>
+
+            <!-- STEP: HARD UNINSTALL APPS -->
+            <div class="step-container" style="border-top: 2px dashed #e2e8f0; padding-top: 20px; margin-top: 40px;">
+                <div class="step-header"><span class="step-badge" style="background:#ef4444">УДАЛЕНИЕ</span><span class="step-title">Жесткое удаление (Ярлыки + Файлы)</span></div>
+                <div class="code-card">
+                    <div class="code-header"><span class="code-label">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                    <div class="code-content"><span class="comment"># 1. Закрытие процессов</span>
+<span class="cmdlet">Stop-Process</span> <span class="param">-Name</span> "OUTLOOK", "MSACCESS", "ONENOTE" <span class="param">-Force</span> <span class="param">-ErrorAction</span> SilentlyContinue
+
+<span class="comment"># 2. Удаление ярлыков (ProgramData)</span>
+<span class="cmdlet">Remove-Item</span> <span class="string">"C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Access.lnk"</span> <span class="param">-Force</span> <span class="param">-ErrorAction</span> SilentlyContinue
+<span class="cmdlet">Remove-Item</span> <span class="string">"C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Outlook.lnk"</span> <span class="param">-Force</span> <span class="param">-ErrorAction</span> SilentlyContinue
+<span class="cmdlet">Remove-Item</span> <span class="string">"C:\ProgramData\Microsoft\Windows\Start Menu\Programs\OneNote.lnk"</span> <span class="param">-Force</span> <span class="param">-ErrorAction</span> SilentlyContinue
+
+<span class="comment"># 3. Удаление компонентов из Office (Перенастройка)</span>
+<span class="cmdlet">Set-Location</span> <span class="string">"C:\ODT"</span>
+<span class="cmdlet">Set-Content</span> <span class="string">"exclude_apps.xml"</span> <span class="string">'&lt;Configuration&gt;&lt;Add OfficeClientEdition="64" Channel="Current"&gt;&lt;Product ID="ProPlus2021Retail"&gt;&lt;Language ID="ru-ru"/&gt;&lt;ExcludeApp ID="Outlook"/&gt;&lt;ExcludeApp ID="Access"/&gt;&lt;ExcludeApp ID="OneNote"/&gt;&lt;/Product&gt;&lt;/Add&gt;&lt;Display Level="None" AcceptEULA="TRUE"/&gt;&lt;/Configuration&gt;'</span>
+<span class="cmdlet">.\setup.exe</span> <span class="string">/configure</span> <span class="string">exclude_apps.xml</span></div>
+                </div>
+                <div class="exec-wrapper"><div class="btn-exec" onclick="toggleExec(this)"><div class="exec-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="exec-text">Выполнить</span></div></div>
+                <div class="success-box">Ожидаемый результат: Ярлыки исчезнут, приложения удалятся.</div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW: KEYS ================= -->
+        <div id="view-keys" class="tab-content">
+            <h1>Ключи продукта (GVLK)</h1>
+            <div class="key-grid">
+                <div class="code-card"><div class="code-header"><span class="code-label">OFFICE 2016 PRO PLUS</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div><div class="code-content">XQNVK-8JYDB-WJ9W3-YJ8YR-WFG99</div></div>
+                <div class="code-card"><div class="code-header"><span class="code-label">OFFICE 2021 PRO PLUS</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div><div class="code-content">FXYTK-NJJ8C-GB6DW-3DYQT-6F7TH</div></div>
+                <div class="code-card"><div class="code-header"><span class="code-label">VISIO 2016 PRO</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div><div class="code-content">PD3PC-RHNGV-FXJ29-8JK7D-RJRJK</div></div>
+                <div class="code-card"><div class="code-header"><span class="code-label">OUTLOOK 2021</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div><div class="code-content">C9FM6-3N72F-HFJXB-TM3V9-T86R9</div></div>
+                <div class="code-card"><div class="code-header"><span class="code-label">ACCESS 2021</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div><div class="code-content">WM8YG-YNGDD-4JHDC-PG3F4-FC4T4</div></div>
+                <div class="code-card"><div class="code-header"><span class="code-label">ONENOTE (GENERIC)</span><button class="copy-btn" onclick="copyCode(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div><div class="code-content">DR92N-9HTF2-97XKM-XW2WJ-XW3J6</div></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="toast" class="toast">Команда скопирована</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabs = document.querySelectorAll('.tab');
+        const contents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                contents.forEach(c => c.classList.remove('active'));
+
+                tab.classList.add('active');
+                const targetId = tab.getAttribute('data-target');
+                const targetContent = document.getElementById(targetId);
+                
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                }
+            });
+        });
+    });
+
+    function toggleExec(btn) {
+        const textSpan = btn.querySelector('.exec-text');
+        if (btn.classList.contains('done')) {
+            btn.classList.remove('done');
+            textSpan.innerText = "Выполнить";
+        } else {
+            btn.classList.add('done');
+            textSpan.innerText = "Выполнено";
+        }
+    }
+
+    async function copyCode(btn) {
+        const container = btn.closest('.code-card');
+        const code = container.querySelector('.code-content').innerText;
+        try {
+            await navigator.clipboard.writeText(code);
+            showToast();
+        } catch (err) {
+            const el = document.createElement('textarea');
+            el.value = code;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast();
+        }
+    }
+
+    function showToast() {
+        const toast = document.getElementById("toast");
+        toast.classList.add("show");
+        setTimeout(() => {
+            toast.classList.remove("show");
+        }, 2000);
+    }
+</script>
+
+</body>
+</html>
