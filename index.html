@@ -1,14 +1,77 @@
+<!-- 
+  ╔══════════════════════════════════════════════════════════════════════════════════════════╗
+  ║   📘 РУКОВОДСТВО АДМИНИСТРАТОРА БАЗЫ ЗНАНИЙ (GITHUB PAGES)                               ║
+  ║   v3.3 [Добавлены пояснения к каждой папке в коде]                                       ║
+  ╠══════════════════════════════════════════════════════════════════════════════════════════╣
+  ║                                                                                          ║
+  ║   1. ДЛЯ ЧЕГО ЭТОТ КОД?                                                                  ║
+  ║   Этот файл (index.html) — это "фасад" вашего репозитория.                               ║
+  ║   Он превращает обычный список файлов GitHub в интерактивный веб-сайт с папками,         ║
+  ║   поиском и поддержкой темной темы. Скрипт работает полностью в браузере (Client-Side).  ║
+  ║                                                                                          ║
+  ║   2. КАК ЭТО РАБОТАЕТ?                                                                   ║
+  ║   Вся структура сайта управляется через HTML-список.                                     ║
+  ║   Скрипт считывает этот список и рисует интерфейс.                                       ║
+  ║                                                                                          ║
+  ║   3. СТРУКТУРА ФАЙЛОВ И ПРИЛОЖЕНИЙ                                                       ║
+  ║   Структура HTML-кода ниже должна отражать логику вашего меню.                           ║
+  ║                                                                                          ║
+  ║   [Пример вашей текущей структуры]:                                                      ║
+  ║   Ваш_Репозиторий/                                                                       ║
+  ║   ├── index.html                       (Этот файл)                                       ║
+  ║   ├── React-To-Single-HTML.html        (Файл в корне)                                    ║
+  ║   ├── my-prompts/                      (Папка с заметками)                               ║
+  ║   │   └── download-microsoft-office... (Локальный файл HTML)                             ║
+  ║   └── my-apps/                         (Папка с приложениями)                            ║
+  ║       ├── Voice Translator             (Внешняя ссылка https://...)                      ║
+  ║       └── Samsung-Galaxy-AI...         (Внешняя ссылка https://...)                      ║
+  ║                                                                                          ║
+  ║   4. КАК РЕДАКТИРОВАТЬ СОДЕРЖИМОЕ (В КОДЕ)                                               ║
+  ║   Для редактирования списка перейдите к: 👉 [ SECTION 3: DATA SOURCE ]                   ║
+  ║   Найдите внутри блок: <div id="folderData" class="hidden">                              ║
+  ║                                                                                          ║
+  ║   [А] ДОБАВИТЬ ПАПКУ:                                                                    ║
+  ║       <div data-folder="ИМЯ_ПАПКИ"> ... </div>                                           ║
+  ║       * Имя папки в data-folder должно совпадать с реальной папкой (если файлы локальные)║
+  ║                                                                                          ║
+  ║   [Б] ДОБАВИТЬ ЛОКАЛЬНЫЙ ФАЙЛ:                                                           ║
+  ║       <div data-file="file.html">Название файла</div>                                    ║
+  ║       * Скрипт сам построит путь: папка/file.html                                        ║
+  ║                                                                                          ║
+  ║   [В] ДОБАВИТЬ ВНЕШНЮЮ ССЫЛКУ ИЛИ WEB-APP:                                               ║
+  ║       <div data-file="https://site.com/app">Мое Приложение</div>                         ║
+  ║       * Если путь начинается с http/https, он откроется как есть (в новой вкладке).      ║
+  ║                                                                                          ║
+  ║   [Г] УДАЛЕНИЕ:                                                                          ║
+  ║       Просто удалите соответствующие строки <div> из кода.                               ║
+  ║                                                                                          ║
+  ║   5. ТЕХНИЧЕСКИЕ ОСОБЕННОСТИ:                                                            ║
+  ║   Логика работы находится в 👉 [ SECTION 4: JS LOGIC ].                                  ║
+  ║   - Universal Routing: Код сам понимает, где корень сайта. Работает на любом аккаунте.   ║
+  ║   - No-Backend: Не требует базы данных.                                                  ║
+  ║                                                                                          ║
+  ╚══════════════════════════════════════════════════════════════════════════════════════════╝
+-->
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <!-- 
+      =============================================================================
+      [ SECTION 1: CONFIG & STYLES ]
+      Мета-теги, подключение библиотек и стили оформления.
+      =============================================================================
+    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Главная страница</title>
+    
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/site.webmanifest">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
 
+    <!-- Подключение Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
@@ -172,6 +235,13 @@
 
 <body class="flex flex-col items-center px-4 md:px-6">
 
+    <!-- 
+      =============================================================================
+      [ SECTION 2: UI LAYOUT ]
+      Визуальная часть: Header, Grid Container, Modal Window.
+      =============================================================================
+    -->
+
     <header class="w-full text-center py-8">
         <h1 class="text-4xl font-bold glowing-text">Главная страница</h1>
         <p class="text-gray-600 dark:text-gray-400 mt-2">Обзор всех файлов, сгруппированных по темам.</p>
@@ -184,30 +254,58 @@
 
     <div class="w-full max-w-5xl p-6 card">
         <div id="folderGridContainer" class="folder-grid">
-            </div>
+            <!-- Сюда вставляются карточки папок -->
+        </div>
 
+        <!-- 
+          =============================================================================
+          [ SECTION 3: DATA SOURCE ]
+          Скрытый блок данных. JavaScript читает эту структуру для рендеринга.
+          Внесите сюда ваши файлы и папки.
+          =============================================================================
+        -->
         <div class="root-folder-branches" style="display: none;">
             <div id="folderData" class="hidden">
 
+                <!-- 
+                  ╔══════════════════════════════════════════════════════════════════════╗
+                  ║  📂 ПАПКА 1: КОРНЕВОЙ РАЗДЕЛ (ROOT)                                  ║
+                  ║  Файлы, которые лежат в той же папке, что и index.html.              ║
+                  ║  Имя этой папки в коде должно содержать ".github.io" или "root".     ║
+                  ╚══════════════════════════════════════════════════════════════════════╝
+                -->
                 <div data-folder="gba-2010.github.io">
                     <div data-file="React-To-Single-HTML.html">React-To-Single-HTML.html</div>
                 </div>
                  
+                <!-- 
+                  ╔══════════════════════════════════════════════════════════════════════╗
+                  ║  📂 ПАПКА 2: ОБЫЧНАЯ ПАПКА С ФАЙЛАМИ (my-prompts)                    ║
+                  ║  Содержит локальные HTML-файлы, лежащие в подпапке "my-prompts".     ║
+                  ║  Путь генерируется автоматически: my-prompts/файл.html               ║
+                  ╚══════════════════════════════════════════════════════════════════════╝
+                -->
                 <div data-folder="my-prompts">
                     <div data-file="download-microsoft-office-v1.html">download-microsoft-office-v1.html</div>
                     <div data-file="download-microsoft-office-v2.html">download-microsoft-office-v2.html</div>
                     <div data-file="download-microsoft-office-v3.html">download-microsoft-office-v3.html</div>
                 </div>
 
-               <div data-folder="my-apps">
-                   <div data-file="https://gba-2010.github.io/voice-translator/">
-                   Voice Translator (Открыть приложение)
-                   </div>
+                <!-- 
+                  ╔══════════════════════════════════════════════════════════════════════╗
+                  ║  📂 ПАПКА 3: ВНЕШНИЕ ССЫЛКИ И ПРИЛОЖЕНИЯ (my-apps)                   ║
+                  ║  Используется для ссылок на другие сайты или веб-приложения.         ║
+                  ║  В атрибуте data-file указывается полный URL (https://...).          ║
+                  ╚══════════════════════════════════════════════════════════════════════╝
+                -->
+                <div data-folder="my-apps">
+                    <div data-file="https://gba-2010.github.io/voice-translator/">
+                        Voice Translator (Открыть приложение)
+                    </div>
                     <div data-file="https://gba-2010.github.io/voice-translator/Samsung-Galaxy-AI-transliator-v2.html">
-                   Samsung-Galaxy-AI-transliator-v2.html (Открыть приложение)
-               </div>
-
-</div>
+                        Samsung-Galaxy-AI-transliator-v2.html (Открыть приложение)
+                    </div>
+                </div>
                
             </div>
         </div>
@@ -227,6 +325,16 @@
         <p>&copy; 2025. Все права защищены.</p>
     </footer>
 
+    <!-- 
+      =============================================================================
+      [ SECTION 4: JS LOGIC ]
+      Основная логика приложения:
+      1. Парсинг данных из HTML.
+      2. Генерация интерактивных карточек.
+      3. Универсальное формирование путей (включая внешние http-ссылки).
+      4. Управление темой (Dark/Light).
+      =============================================================================
+    -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const rootHtml = document.documentElement;
@@ -279,9 +387,9 @@
                 folder.files.forEach(file => {
                     let baseUrl;
                     
-                    // --- ВАЖНОЕ ИСПРАВЛЕНИЕ: ПРОВЕРКА НА ВНЕШНЮЮ ССЫЛКУ ---
+                    // --- ОБРАБОТКА ВНЕШНИХ ССЫЛОК ---
                     if (file.href.startsWith('http') || file.href.startsWith('https')) {
-                        baseUrl = file.href; // Если это полная ссылка - оставляем как есть
+                        baseUrl = file.href; // Если это полная ссылка
                     } else {
                         // Иначе строим относительный путь
                         baseUrl = isRoot 
